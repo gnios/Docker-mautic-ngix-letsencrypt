@@ -13,6 +13,9 @@ CMD export > /etc/envvars && /usr/sbin/runsvdir-start
 RUN echo 'export > /etc/envvars' >> /root/.bashrc
 RUN echo "alias tcurrent='tail /var/log/*/current -f'" | tee -a /root/.bashrc /etc/bash.bashrc
 
+# Define Mautic version and expected SHA1 signature
+ENV MAUTIC_VERSION 2.7.1
+
 # Utilities
 RUN apt-get install -y --no-install-recommends vim less net-tools inetutils-ping wget curl git telnet nmap socat dnsutils netcat tree htop unzip sudo software-properties-common jq psmisc iproute python ssh
 
@@ -20,7 +23,7 @@ RUN apt-get install -y --no-install-recommends vim less net-tools inetutils-ping
 RUN apt-get install -y cron nginx php-fpm php-xml php-mbstring php-mysql php-mcrypt php-intl php-zip php-imap php-curl composer
 
 #Mautic
-RUN wget -O - https://github.com/mautic/mautic/archive/2.6.0.tar.gz | tar zx -C /var/www/html --strip-components=1 && \
+RUN wget -O - https://github.com/mautic/mautic/archive/${MAUTIC_VERSION}tar.gz | tar zx -C /var/www/html --strip-components=1 && \
     cd /var/www/html && \
     mkdir -p .git/hooks && \
     composer install && \
@@ -43,3 +46,10 @@ COPY crontab /
 COPY sv /etc/service 
 ARG BUILD_INFO
 LABEL BUILD_INFO=$BUILD_INFO
+
+COPY start.sh /
+COPY nginx.conf /etc/nginx/
+COPY nginx-secure.conf /etc/nginx/
+
+COPY dhparams.pem /etc/ssl/private/
+CMD /start.sh
