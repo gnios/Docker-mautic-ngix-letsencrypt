@@ -28,10 +28,10 @@ letsencrypt:
 app:
   build: app-image
   links:
-    - mautic-db
+    - mysql
   ports:
     - "80"
-mautic-db:
+mysql:
   image: mariadb
   environment:
     MYSQL_ROOT_PASSWORD: mysqlrootpassword
