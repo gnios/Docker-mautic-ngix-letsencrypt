@@ -1,5 +1,5 @@
 app:
-  build: nginx-image
+  build: app-image
   links:
     - letsencrypt
     - mysql
