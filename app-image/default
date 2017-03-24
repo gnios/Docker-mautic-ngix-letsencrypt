@@ -11,6 +11,7 @@ server {
 
 	location / {
           try_files $uri /index.php$is_args$args;
+          include cors;
 	}
 
 	location ~ \.php$ {

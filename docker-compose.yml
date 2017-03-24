@@ -32,7 +32,7 @@ app:
   ports:
     - "80"
 mysql:
-  image: mariadb,
+  image: mariadb:latest,
   environment:
     MYSQL_ROOT_PASSWORD: mysqlrootpassword
     MYSQL_DATABASE: mautic
