@@ -1,7 +1,7 @@
 <?php
 $parameters = array(
     'db_driver' => 'pdo_mysql',
-    'db_host' => 'mautic-db',
+    'db_host' => 'mariadb',
     'db_table_prefix' => null,
     'db_port' => '3306',
     'db_name' => 'mautic',
