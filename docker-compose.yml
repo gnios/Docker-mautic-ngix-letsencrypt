@@ -1,6 +1,7 @@
+version: "2"
 nginx:
   build: nginx-image
-  links:
+  depends_on:
     - letsencrypt
     - app
   environment:
@@ -18,8 +19,8 @@ letsencrypt:
   command:  bash -c "sleep 6 && certbot certonly --standalone -d mautic3.welo.love --text --agree-tos --email eugenio00@gmail.com --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
   entrypoint: ""
   volumes:
-    - lets:/etc/letsencrypt
-    - lets:/var/lib/letsencrypt
+    - sslcerts:/etc/letsencrypt
+    - sslcerts:/var/lib/letsencrypt
   ports:
     - "80"
     - "443"
@@ -27,7 +28,7 @@ letsencrypt:
     - TERM=xterm
 app:
   build: app-image
-  links:
+  depends_on:
     - mysql
   ports:
     - "80"
@@ -38,3 +39,5 @@ mysql:
     MYSQL_DATABASE: mautic
     MYSQL_USER: mautic
     MYSQL_PASSWORD: mauticdbpass
+volumes:
+  sslcerts:
