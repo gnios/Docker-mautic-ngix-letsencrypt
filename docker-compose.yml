@@ -1,7 +1,6 @@
-version: "2.0"
 nginx:
   build: nginx-image
-  depends_on:
+  links:
     - letsencrypt
     - app
   environment:
@@ -28,7 +27,7 @@ letsencrypt:
     - TERM=xterm
 app:
   build: app-image
-  depends_on:
+  links:
     - mysql
   ports:
     - "80"
