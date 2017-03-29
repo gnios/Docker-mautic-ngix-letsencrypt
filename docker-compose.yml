@@ -19,8 +19,8 @@ letsencrypt:
   command:  bash -c "sleep 6 && certbot certonly --standalone -d mautic3.welo.love --text --agree-tos --email eugenio00@gmail.com --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
   entrypoint: ""
   volumes:
-    - sslcerts:/etc/letsencrypt
-    - sslcerts:/var/lib/letsencrypt
+    - sslcerts_1:/etc/letsencrypt
+    - sslcerts_1:/var/lib/letsencrypt
   ports:
     - "80"
     - "443"
@@ -40,4 +40,4 @@ mysql:
     MYSQL_USER: mautic
     MYSQL_PASSWORD: mauticdbpass
 volumes:
-  sslcerts:
+  sslcerts_1:
