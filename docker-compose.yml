@@ -3,7 +3,6 @@ services:
   nginx:
     build: app-image
     links:
-      - letsencrypt
       - mysql
     environment:
       - MY_DOMAIN_NAME=mautic3.welo.love
