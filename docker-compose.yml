@@ -38,5 +38,3 @@ mysql:
     MYSQL_DATABASE: mautic
     MYSQL_USER: mautic
     MYSQL_PASSWORD: mauticdbpass
-volumes:
-  sslcerts:
