@@ -13,8 +13,9 @@ services:
     ports:
       - "80"
       - "443"
-    volumes_from:
-      - letsencrypt
+    volumes:
+      - sslcerts_2:/etc/letsencrypt
+      - sslcerts_2:/var/lib/letsencrypt
 
   letsencrypt:
     image: quay.io/letsencrypt/letsencrypt:latest
