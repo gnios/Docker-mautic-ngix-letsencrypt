@@ -3,12 +3,6 @@ FROM nginx
 # Define Mautic version and expected SHA1 signature
 ENV MAUTIC_VERSION 2.7.1
 
-# Utilities
-RUN apt-get install -y --no-install-recommends vim less net-tools inetutils-ping wget curl git telnet nmap socat dnsutils netcat tree htop unzip sudo software-properties-common jq psmisc iproute python ssh
-
-#Required
-RUN apt-get install -y cron php-fpm php-xml php-mbstring php-mysql php-mcrypt php-intl php-zip php-imap php-curl composer
-
 #Mautic
 RUN wget -O - https://github.com/mautic/mautic/archive/${MAUTIC_VERSION}.tar.gz | tar zx -C /var/www/html --strip-components=1 && \
     cd /var/www/html && \
