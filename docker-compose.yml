@@ -36,4 +36,4 @@ services:
       MYSQL_USER: mautic
       MYSQL_PASSWORD: mauticdbpass
 volumes:
- sslcerts_2:  ./sslcerts
+ sslcerts_2:  "./sslcerts"
