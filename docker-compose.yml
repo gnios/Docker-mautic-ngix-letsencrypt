@@ -1,8 +1,8 @@
 nginx:
-  build: app-image
+  build: nginx-image
   links:
     - letsencrypt
-    - mysql
+    - app
   environment:
     - MY_DOMAIN_NAME=mautics.welo.love
   mem_limit: 2g
@@ -25,6 +25,13 @@ letsencrypt:
     - "443"
   environment:
     - TERM=xterm
+app:
+  build: app-image
+  links:
+    - mysql
+  ports:
+    - "80"
+    - "443"
 mysql:
   image: mariadb
   environment:
