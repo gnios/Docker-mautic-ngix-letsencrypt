@@ -39,7 +39,6 @@ RUN  chown -R www-data:www-data /var/www/html
 RUN mkdir -p /var/log/mautic && \
     chown www-data:www-data /var/log/mautic
 
-COPY default /etc/nginx/sites-enabled/
 COPY crontab /
 COPY ./cors /etc/nginx/
 
