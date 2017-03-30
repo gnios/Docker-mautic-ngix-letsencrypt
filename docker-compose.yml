@@ -4,7 +4,7 @@ services:
     build: app-image
     depends_on:
       - letsencrypt
-      - db:mysql
+      - db
     environment:
       - MY_DOMAIN_NAME=mautics.welo.love
     # restart: always
