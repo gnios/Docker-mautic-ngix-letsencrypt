@@ -2,7 +2,7 @@ version: ‘2’
 services:
   nginx:
     build: app-image
-    links:
+    depends_on:
       - letsencrypt
       - mysql
     environment:
@@ -14,7 +14,7 @@ services:
       - "80:80"
       - "443:443"
     volumes_from:
-      - letsencrypt
+      - container:letsencrypt
   letsencrypt:
     image: quay.io/letsencrypt/letsencrypt:latest
     command:  bash -c "sleep 6 && certbot certonly --standalone -d mautic3.welo.love --text --agree-tos --email eugenio00@gmail.com --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
