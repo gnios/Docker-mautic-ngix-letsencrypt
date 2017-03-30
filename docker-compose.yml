@@ -9,9 +9,9 @@ services:
     mem_limit: 2g
     cpu_shares: 256
     # restart: always
-    ports: 
-      - "80:80"
-      - "443:443"
+    ports:
+      - "80"
+      - "443"
     volumes:
       - sslcerts_2:/etc/letsencrypt
       - sslcerts_2:/var/lib/letsencrypt
