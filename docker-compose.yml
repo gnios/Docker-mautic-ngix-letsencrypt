@@ -12,7 +12,7 @@ services:
     ports:
       - "80"
       - "443"
-    volumes_from: :
+    volumes_from:
       - letsencrypt
 
   letsencrypt:
