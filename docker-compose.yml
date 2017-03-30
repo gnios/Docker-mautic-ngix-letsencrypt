@@ -4,7 +4,7 @@ services:
     build: app-image
     depends_on:
       - letsencrypt
-      - mysql
+      - db:mysql
     environment:
       - MY_DOMAIN_NAME=mautics.welo.love
     # restart: always
@@ -28,7 +28,7 @@ services:
     environment:
       - TERM=xterm
 
-  mysql:
+  db:
     image: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: mysqlrootpassword
