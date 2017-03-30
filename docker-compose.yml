@@ -2,6 +2,7 @@ nginx:
   build: app-image
   links:
     - mysql
+    - letsencrypt
   environment:
     - MY_DOMAIN_NAME=mautic.spreadwe.love
   mem_limit: 2g
@@ -13,6 +14,18 @@ nginx:
   volumes:
     - /docker/sslcert:/etc/letsencrypt
     - /docker/sslcert:/var/lib/letsencrypt
+letsencrypt:
+  image: quay.io/letsencrypt/letsencrypt:latest
+  command:  bash -c "sleep 6 && certbot certonly --standalone -d mautic3.welo.love --text --agree-tos --email eugenio00@gmail.com --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
+  entrypoint: ""
+  volumes:
+    - /docker/sslcert:/etc/letsencrypt
+    - /docker/sslcert:/var/lib/letsencrypt
+  ports:
+    - "80"
+    - "443"
+  environment:
+    - TERM=xterm
 mysql:
   image: mariadb
   environment:
