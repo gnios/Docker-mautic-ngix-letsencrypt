@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 services:
   nginx:
     build: app-image
@@ -36,4 +36,4 @@ services:
       MYSQL_USER: mautic
       MYSQL_PASSWORD: mauticdbpass
 volumes:
- sslcerts_2:  #declare a volume named pgvolume
+ sslcerts_2:  ./sslcerts
