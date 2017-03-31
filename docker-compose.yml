@@ -1,6 +1,6 @@
 nginx:
   build: app-image
-  depends_on:
+  links:
     - letsencrypt
     - mysql
   environment:
