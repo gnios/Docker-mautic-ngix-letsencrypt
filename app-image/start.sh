@@ -46,8 +46,8 @@ echo Waiting for folder /etc/letsencrypt/live/$MY_DOMAIN_NAME to exist
 # done
 
 echo replacing ___my.example.com___/$MY_DOMAIN_NAME
-echo replacing ___APPLICATION_IP___/$APP_PORT_80_TCP_ADDR
-echo replacing ___APPLICATION_PORT___/$APP_PORT_80_TCP_PORT
+# echo replacing ___APPLICATION_IP___/$APP_PORT_80_TCP_ADDR
+# echo replacing ___APPLICATION_PORT___/$APP_PORT_80_TCP_PORT
 
 
 # Put your domain name into the nginx reverse proxy config.
