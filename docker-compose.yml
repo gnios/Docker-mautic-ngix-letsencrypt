@@ -42,6 +42,5 @@ services:
       - /docker/sslcerts:/var/lib/letsencrypt
     depends_on:
       - mautic
-      
 volumes:
   sslcerts:
