@@ -43,3 +43,10 @@ COPY crontab /
 COPY sv /etc/service 
 ARG BUILD_INFO
 LABEL BUILD_INFO=$BUILD_INFO
+
+COPY start.sh /
+COPY nginx.conf /etc/nginx/
+COPY nginx-secure.conf /etc/nginx/
+
+COPY dhparams.pem /etc/ssl/private/
+CMD /start.sh

@@ -2,6 +2,8 @@ nginx:
   build: app-image
   links:
     - mysql
+  environment:
+    - MY_DOMAIN_NAME=mautic.welobot.love
   mem_limit: 2g
   cpu_shares: 256
   # restart: always
