@@ -31,6 +31,10 @@ server {
    location /.well-known {
        default_type text/plain;
    }
+    
+    location /.well-known/acme-challenge {
+        default_type text/plain;
+	}
 
    # redirect all HTTP traffic to HTTPS.
    location / {
@@ -62,6 +66,10 @@ server {
     location /.well-known {
         default_type text/plain;
     }
+
+    location /.well-known/acme-challenge {
+        default_type text/plain;
+	}
 
     # redirect index.php to root
     rewrite ^/index.php/(.*) /$1  permanent;
