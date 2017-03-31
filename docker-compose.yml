@@ -12,7 +12,7 @@ nginx:
   ports: 
     - "80:80"
     - "443:443"
-  volumes_from:
+  volumes:
     - /docker/sslcerts:/etc/letsencrypt
     - /docker/sslcerts:/var/lib/letsencrypt
 
