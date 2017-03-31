@@ -1,49 +1,57 @@
-FROM ubuntu:16.04
+FROM php:7.0-fpm
+MAINTAINER Dave Lane <dave@oerfoundation.org> (@lightweight)
+# based on that by MAINTAINER Michael Babker <michael.babker@mautic.org> (@mbabker)
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=en_US.UTF-8 \
-    TERM=xterm
-RUN locale-gen en_US en_US.UTF-8
-RUN echo "export PS1='\e[1;31m\]\u@\h:\w\\$\[\e[0m\] '" | tee -a /root/.bashrc /etc/bash.bashrc
-RUN apt-get update
+# Install PHP extensions
+RUN apt-get update && apt-get install -y apt-utils git libc-client-dev libicu-dev \
+    libkrb5-dev libmcrypt-dev libssl-dev unzip zip
+RUN apt-get install -y net-tools vim dnsutils
+# install cron and msmtp for outgoing email
+RUN apt-get install -y cron msmtp
+# clean up
+RUN rm -rf /var/lib/apt/lists/*
+# install relevant PHP extensions
+RUN docker-php-ext-configure imap --with-imap --with-imap-ssl --with-kerberos
+RUN docker-php-ext-install imap intl mbstring mcrypt mysqli pdo pdo_mysql zip
+# address Mautic-specific PHP config requirements
+RUN echo "always_populate_raw_post_data = -1;" > /usr/local/etc/php/conf.d/php.ini
+RUN echo 'date.timezone = "Pacific/Auckland";' >> /usr/local/etc/php/conf.d/php.ini
+RUN echo 'cgi.fix_pathinfo = 0;' >> /usr/local/etc/php/conf.d/php.ini
+# set up cron tasks
+RUN echo '# cron jobs for Mautic - dave@oerfoundation.org' > /etc/cron.d/mautic-cron
+RUN echo '# see https://mautic.org/docs/en/setup/cron_jobs.html for details' >> /etc/cron.d/mautic-cron
+RUN echo 'CONSOLE=/var/www/html/app/console' >> /etc/cron.d/mautic-cron
+RUN echo '# Run Segment updates 3 times per hour' >> /etc/cron.d/mautic-cron
+RUN echo '0,20,40 * * * * root php $CONSOLE mautic:segments:update' >> /etc/cron.d/mautic-cron
+RUN echo '# Run Campaign updates - ensure candidates are correct - 3 times per hour' >> /etc/cron.d/mautic-cron
+RUN echo '5,25,45 * * * * root php $CONSOLE mautic:campaigns:rebuild' >> /etc/cron.d/mautic-cron
+RUN echo '# Run Campaign events 3 times per hour' >> /etc/cron.d/mautic-cron
+RUN echo '10,30,50 * * * * root php $CONSOLE mautic:campaigns:trigger' >> /etc/cron.d/mautic-cron
+RUN echo '# Process Email Queue every other hour' >> /etc/cron.d/mautic-cron
+RUN echo '15 */2 * * * root php $CONSOLE ' >> /etc/cron.d/mautic-cron
+RUN echo '# Fetch and Process Monitored Email 4 times daily' >> /etc/cron.d/mautic-cron
+RUN echo '15 1,7,13,19 * * * root php $CONSOLE ' >> /etc/cron.d/mautic-cron
+RUN echo '# Social Monitoring 4 times daily' >> /etc/cron.d/mautic-cron
+RUN echo '15 3,9,15,21 * * * root php $CONSOLE ' >> /etc/cron.d/mautic-cron
+RUN echo '# Process Webhooks 4 times daily' >> /etc/cron.d/mautic-cron
+RUN echo '15 5,11,17,23 * * * root php $CONSOLE ' >> /etc/cron.d/mautic-cron
 
-# Runit
-RUN apt-get install -y --no-install-recommends runit
-CMD export > /etc/envvars && /usr/sbin/runsvdir-start
-RUN echo 'export > /etc/envvars' >> /root/.bashrc
-RUN echo "alias tcurrent='tail /var/log/*/current -f'" | tee -a /root/.bashrc /etc/bash.bashrc
+VOLUME /var/www/html
 
 # Define Mautic version and expected SHA1 signature
 ENV MAUTIC_VERSION 2.7.1
 
-# Utilities
-RUN apt-get install -y --no-install-recommends vim less net-tools inetutils-ping wget curl git telnet nmap socat dnsutils netcat tree htop unzip sudo software-properties-common jq psmisc iproute python ssh
+# do a GitHub download
+# Download package and extract to web volume
+RUN curl -o mautic.zip -SL https://github.com/mautic/mautic/archive/${MAUTIC_VERSION}.zip \
+	&& unzip mautic.zip -d /usr/src \
+    && mv /usr/src/mautic-${MAUTIC_VERSION} /usr/src/mautic \
+	&& rm mautic.zip \
+	&& chown -R www-data:www-data /usr/src/mautic
 
-#Required
-RUN apt-get install -y cron nginx php-fpm php-xml php-mbstring php-mysql php-mcrypt php-intl php-zip php-imap php-curl composer
-
-#Mautic
-RUN wget -O - https://github.com/mautic/mautic/archive/${MAUTIC_VERSION}.tar.gz | tar zx -C /var/www/html --strip-components=1 && \
-    cd /var/www/html && \
-    mkdir -p .git/hooks && \
-    composer install && \
-    chown -R www-data:www-data /var/www/html
-
-#Put all Mautic instance config files into one directory    
-RUN cd /var/www/html/app  && \
-    mkdir -p cache/prod local/config local/themes local/idp local/media/files local/media/images
-COPY paths_local.php /var/www/html/app/config/
-COPY parameters_local.php /var/www/html/app/config/
-RUN  chown -R www-data:www-data /var/www/html
-
-RUN mkdir -p /var/log/mautic && \
-    chown www-data:www-data /var/log/mautic
-
-COPY default /etc/nginx/sites-enabled/
-COPY crontab /
-COPY ./cors /etc/nginx/
-
-# Add runit services
-COPY sv /etc/service 
-ARG BUILD_INFO
-LABEL BUILD_INFO=$BUILD_INFO
+# Copy configuration scripts to the container
+COPY docker-entrypoint.sh /entrypoint.sh
+COPY makeconfig.php /makeconfig.php
+COPY makedb.php /makedb.php
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm"]
