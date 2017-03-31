@@ -1,10 +1,7 @@
 nginx:
-  build: nginx-image
+  build: app-image
   links:
-    - letsencrypt
-    - app
-  environment:
-    - MY_DOMAIN_NAME=mautic.welobot.love
+    - mysql
   mem_limit: 2g
   cpu_shares: 256
   # restart: always
@@ -25,12 +22,7 @@ letsencrypt:
     - "443"
   environment:
     - TERM=xterm
-app:
-  build: app-image
-  links:
-    - mysql
-  ports:
-    - "80"
+
 mysql:
   image: mariadb
   environment:
