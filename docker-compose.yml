@@ -1,3 +1,4 @@
+
 nginx:
   build: app-image
   links:
@@ -12,7 +13,17 @@ nginx:
     - "80:80"
     - "443:443"
   volumes_from:
-    - letsencrypt
+    - /docker/sslcerts:/etc/letsencrypt
+    - /docker/sslcerts:/var/lib/letsencrypt
+
+mysql:
+  image: mariadb
+  environment:
+    MYSQL_ROOT_PASSWORD: mysqlrootpassword
+    MYSQL_DATABASE: mautic
+    MYSQL_USER: mautic
+    MYSQL_PASSWORD: mauticdbpass
+
 letsencrypt:
   image: quay.io/letsencrypt/letsencrypt:latest
   command:  bash -c "sleep 6 && certbot certonly --standalone -d mautic.welobot.love --text --agree-tos --email eugenio00@gmail.com --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
@@ -25,11 +36,3 @@ letsencrypt:
     - "443"
   environment:
     - TERM=xterm
-
-mysql:
-  image: mariadb
-  environment:
-    MYSQL_ROOT_PASSWORD: mysqlrootpassword
-    MYSQL_DATABASE: mautic
-    MYSQL_USER: mautic
-    MYSQL_PASSWORD: mauticdbpass
