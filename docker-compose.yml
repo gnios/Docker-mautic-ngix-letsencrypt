@@ -1,6 +1,7 @@
 nginx:
   build: app-image
-  links:
+  depends_on:
+    - letsencrypt
     - mysql
   environment:
     - MY_DOMAIN_NAME=mautic.welobot.love
