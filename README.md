@@ -1,165 +1,57 @@
-# Deploy a dockerised web app over HTTPS with letsencrypt.
+Docker Mautic Image
+===================
+# License
 
-This repo uses docker-compose so you'll need to [install that](https://www.docker.com/docker-toolbox) if you dont have it.
-
-## How it works
-
-When you bring up the service with ```docker-compose up```, docker compose starts an nginx reverse proxy, your app container, and the official letsencrypt container.
-
-The proxy image's init script starts nginx in the initial config:
-
-![Imgur](http://i.imgur.com/nHy2sEH.png)
-
-```nginx
-events { worker_connections 1024; }
-http {
-	server {
-		listen 80;
-		server_name ___my.example.com___;
-
-		location /.well-known/acme-challenge {
-			proxy_pass http://___LETSENCRYPT_IP___:___LETSENCRYPT_PORT___;
-			proxy_set_header Host            $host;
-			proxy_set_header X-Forwarded-For $remote_addr;
-			proxy_set_header X-Forwarded-Proto https;
-		}
-
-		location / {
-			proxy_pass http://___APPLICATION_IP___:___APPLICATION_PORT___;
-			proxy_set_header Host            $host;
-			proxy_set_header X-Forwarded-For $remote_addr;
-		}
-
-	}
-}
-```
-
-The initial config allows letsencrypt's acme challenge to get to the letsencrypt container. The letsencrypt container runs in _standalone_ mode, connecting to letsencrypt.org to make the cert request and then waiting on port 80 for the acme-challenge. 
-
-When letsencrypt issues the challenge request, the le client writes the certs to /etc/letsencrypt, which is a volume mounted to the nginx container. The nginx container's init script notices the certs appear, and loads a new config, setting up the https port forward.
-
-![Imgur](http://i.imgur.com/iGOGUgn.png)
-
-```nginx
-events { worker_connections 1024; }
-http {
-	server {
-		listen 80;
-		server_name ___my.example.com___;
-
-		location /.well-known/acme-challenge {
-			proxy_pass http://___LETSENCRYPT_IP___:___LETSENCRYPT_PORT___;
-			proxy_set_header Host            $host;
-			proxy_set_header X-Forwarded-For $remote_addr;
-			proxy_set_header X-Forwarded-Proto https;
-		}
-
-		location / {
-			return         301 https://$server_name$request_uri;
-		}
-
-	}
-
-	server {
-		listen 443;
-		server_name ___my.example.com___;
-
-		ssl on;
-		ssl_certificate /etc/letsencrypt/live/___my.example.com___/fullchain.pem;
-		ssl_certificate_key /etc/letsencrypt/live/___my.example.com___/privkey.pem;
-		ssl_session_timeout 5m;
-		ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-		ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
-		ssl_prefer_server_ciphers on;
-
-		ssl_session_cache shared:SSL:10m;
-		ssl_dhparam /etc/ssl/private/dhparams.pem;
-
-		location /.well-known/acme-challenge {
-			proxy_pass http://___LETSENCRYPT_HTTPS_IP___:___LETSENCRYPT_HTTPS_PORT___;
-			proxy_set_header Host            $host;
-			proxy_set_header X-Forwarded-For $remote_addr;
-			proxy_set_header X-Forwarded-Proto https;
-		}
-
-		location / {
-			proxy_pass http://___APPLICATION_IP___:___APPLICATION_PORT___;
-			proxy_set_header Host            $host;
-			proxy_set_header X-Forwarded-For $remote_addr;
-		}
-	}
-}
-```
-
-The service is now running over https. 
-
-## How to run it
-
-You need a docker server running on the public internet, with a DNS entry pointing at it. If you dont have this yet, use the [other repo](https://bitbucket.org/automationlogic/docker-machine-on-aws) in this series .
-
-```
-git clone git@bitbucket.org:automationlogic/le-docker-compose.git
-cd le-docker-compose
-```
-
-Open up docker-compose.yml, and change the two instances of ```www.yourdomain.co.uk``` with the dns name your docker server is running at. Then,
-
-```
-docker-compose  build
-docker-compose  up
-```
-
-An example app is now running securely. Try it with your browser!
-
-The letsencrypt container exited - this is what we want.
-
-
-## Integrate your app
-
-To use this with your own dockerised web server, edit docker-compose again.
-
-Replace this section:
-
-```
-app:
-  build: mock_server
-  ports:
-    - "80"
-```
-
-with 
-
-```
-app:
-  image: yourimage
-  ports:
-    - "80"
-```
-
-and then run
-
-```
-docker-compose rm -f
-docker-compose up
-```
-
-## Renew your certificate
-
-Start the letsencrypt container with docker compose. The container starts, runs the acme process, and exits.
-
-```
-docker-compose run letsencrypt
-```
-
-Then, reload the nginx config
-
-```
-docker exec ledockercompose_nginx_1 nginx -s reload
-```
-
-Done.
+Mautic (and this Docker Recipe) is distributed under the GPL v3 license. Full details of the license can be found in the [Mautic GitHub repository](https://github.com/mautic/mautic/blob/staging/LICENSE.txt).
 
 
 
+# How to use this image
 
+These instructions might be useful to some, so I'm leaving them here, but I've written more comprehensive instructions on https://tech.oeru.org/installing-mautic-php7-fpm-docker-nginx-and-mariadb-ubuntu-1604
 
+1. you need a Docker host configured to use both a current Docker and Docker Compose with network access and git installed.  
+
+1. make sure you have a MySQL or MariaDB running either on your Docker host, or in a container
+
+1. clone this repo:
+`git clone git@github.com:oeru/docker-mautic.git`
+which will, by default, create a directory called 'docker-mautic'
+
+1. create a local docker-compose.yml by copying docker-compose.yml-sample:
+`cd docker-mautic`
+`cp docker-compose.yml-sample docker-compose.yml`
+and the edit the file to specify the details of your MySQL or MariaDB database. You need to specify a user who has the ability to create a database. Also, if you're running an nginx container, you can tweak the ports assignments to make it publicly visible (I encourage defaulting to SSL!).
+
+1. adjust the nginx "default.conf" (replace it with "ssl.conf" if you want to offer secure hosting!) and set up the path to your repo in the yml file so that the nginx container can find the conf file.
+
+1. you also need to create a directory on your Docker host for your Mautic code, and reference it in the yml file.
+
+1. then run
+`docker-compose up`
+to pull (if necessary) and run your mautic (and, if you're using it) your nginx container. If you're running it locally, access it via `http://localhost:8083` in a browser.
+
+1. Run `docker-compose up`, wait for it to initialize completely, and visit `http://localhost:8080` or `http://host-ip:8080`.
+
+# Running a MySQL/MariaDB container...
+
+If you're running MySQL or MariaDB in another container, add another stanza to this yml file to describe it and link it with the mautic stanza!
+
+    mautic:
+	  image: kiwilightweight/mautic
+	  links:
+	    - mauticdb:mysql
+	  ports:
+	    - ...
+    mauticdb:
+	  image: mariadb
+
+# Supported Docker versions
+
+This has been tested on Docker 1.13.1 on Ubuntu Linux 16.04 and requires Docker 1.10.x or better.
+
+# User Feedback
+
+## Issues
+
+If you have any problems with or questions about this image, please contact us through a [GitHub issue](https://github.com/oeru/docker-mautic/issues). We will endeavour to assist, although we're doing this through enlightened self-interest, so can't provide any guarantees!
