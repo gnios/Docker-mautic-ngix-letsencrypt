@@ -11,6 +11,7 @@ services:
       MAUTIC_DB_USER: mautic
       MAUTIC_DB_PASSWORD: mauticdbpass
       MAUTIC_TRUSTED_PROXIES: 0.0.0.0/0
+
   mysql:
     image: mariadb
     environment:
@@ -32,11 +33,24 @@ services:
       - "bash"
       - "-c"
     command: |
-      "if [ ! -f /etc/letsencrypt/mautic.crt ]; then
-        openssl req -x509 -newkey rsa:2048 -sha256 -nodes -keyout /etc/letsencrypt/mautic.key -out /etc/letsencrypt/mautic.crt -subj '/CN=mautic.local' -days 3650
-        echo 'Created new ssl certificate'
-      fi
-      exec nginx -g 'daemon off;'"
+      "exec nginx -g 'daemon off;'"
+
+  letsencrypt:
+    image: quay.io/letsencrypt/letsencrypt:latest
+    command:  bash -c "sleep 6 && certbot certonly --standalone -d mautic.welobot.love --text --agree-tos --email george@opsrobot.co.uk --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
+    entrypoint: ""
+    volumes:
+      - /docker/sslcerts:/etc/letsencrypt
+      - /docker/sslcerts:/var/lib/letsencrypt
+    ports:
+      - "80"
+      - "443"
+    environment:
+      - TERM=xterm
+  app:
+    build: app-image
+    ports:
+      - "80"
 
 volumes:
   sslcerts:
