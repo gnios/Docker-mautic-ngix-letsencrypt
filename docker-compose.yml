@@ -47,10 +47,6 @@ services:
       - "443"
     environment:
       - TERM=xterm
-  app:
-    build: app-image
-    ports:
-      - "80"
-
+      
 volumes:
   sslcerts:
