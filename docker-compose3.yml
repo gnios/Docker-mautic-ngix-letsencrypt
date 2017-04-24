@@ -1,0 +1,58 @@
+version: "2"
+services:
+  mautic:
+    image: mautic/mautic
+    depends_on:
+      - mysql
+    ports:
+      - "8081:80"
+    environment:
+      MAUTIC_DB_HOST: mysql
+      MAUTIC_DB_USER: mautic
+      MAUTIC_DB_PASSWORD: mauticdbpass
+      MAUTIC_TRUSTED_PROXIES: 0.0.0.0/0
+      VIRTUAL_HOST: ascendejogos.com.br,www.ascendejogos.com.br
+
+  mysql:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: mysqlrootpassword
+      MYSQL_DATABASE: mautic
+      MYSQL_USER: mautic
+      MYSQL_PASSWORD: mauticdbpass
+
+  nginx:
+    image: nginx
+    ports:
+      - "444:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - /docker/sslcerts:/etc/letsencrypt
+    depends_on:
+      - mautic
+    entrypoint:
+      - "bash"
+      - "-c"
+    command: |
+      "exec nginx -g 'daemon off;'"
+  
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  letsencrypt:
+    image: quay.io/letsencrypt/letsencrypt:latest
+    command:  bash -c "sleep 6 && certbot certonly --standalone -d ascendejogos.com.br --text --agree-tos --email george@opsrobot.co.uk --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
+    entrypoint: ""
+    volumes:
+      - /docker/sslcerts:/etc/letsencrypt
+      - /docker/sslcerts:/var/lib/letsencrypt
+    ports:
+      - "80"
+      - "443"
+    environment:
+      - TERM=xterm
