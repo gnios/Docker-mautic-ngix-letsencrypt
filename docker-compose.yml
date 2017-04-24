@@ -11,6 +11,7 @@ services:
       MAUTIC_DB_USER: mautic
       MAUTIC_DB_PASSWORD: mauticdbpass
       MAUTIC_TRUSTED_PROXIES: 0.0.0.0/0
+      VIRTUAL_HOST: ascendejogos.com.br,www.ascendejogos.com.br
 
   mysql:
     image: mariadb
