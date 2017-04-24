@@ -44,20 +44,20 @@ services:
     ports:
       - "8081:80"
     environment:
-      - MAUTIC_DB_HOST=mysql
-      - MAUTIC_DB_USER=mautic
-      - MAUTIC_DB_PASSWORD=mauticdbpass
-      - MAUTIC_TRUSTED_PROXIES=0.0.0.0/0
-      - VIRTUAL_HOST=ascendejogos.com.br,www.ascendejogos.com.br
-      - VIRTUAL_NETWORK=nginx-proxy
-      - LETSENCRYPT_HOST=ascendejogos.com.br
-      - LETSENCRYPT_EMAIL=eugenio00@gmail.com
+      MAUTIC_DB_HOST: mysql
+      MAUTIC_DB_USER: mautic
+      MAUTIC_DB_PASSWORD: mauticdbpass
+      MAUTIC_TRUSTED_PROXIES: 0.0.0.0/0
+      VIRTUAL_HOST: ascendejogos.com.br,www.ascendejogos.com.br
+      VIRTUAL_NETWORK: nginx-proxy
+      LETSENCRYPT_HOST: ascendejogos.com.br
+      LETSENCRYPT_EMAIL: eugenio00@gmail.com
 
   mysql:
     restart: always
     image: mariadb
     environment:
-      - MYSQL_ROOT_PASSWORD=mysqlrootpassword
-      - MYSQL_DATABASE=mautic
-      - MYSQL_USER= mautic
-      - MYSQL_PASSWORD=mauticdbpass
+      MYSQL_ROOT_PASSWORD: mysqlrootpassword
+      MYSQL_DATABASE: mautic
+      MYSQL_USER: mautic
+      MYSQL_PASSWORD: mauticdbpass
